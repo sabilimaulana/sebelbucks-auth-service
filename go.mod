@@ -2,7 +2,13 @@ module github.com/sabilimaulana/sebelbucks-auth-service
 
 go 1.18
 
-require github.com/spf13/viper v1.12.0
+require (
+	github.com/google/uuid v1.3.0
+	github.com/spf13/viper v1.12.0
+	golang.org/x/crypto v0.0.0-20220411220226-7b82a4e95df4
+	google.golang.org/grpc v1.48.0
+	google.golang.org/protobuf v1.28.0
+)
 
 require (
 	github.com/golang/protobuf v1.5.2 // indirect
@@ -16,11 +22,8 @@ require (
 	github.com/jackc/pgx/v4 v4.16.1 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.4 // indirect
-	golang.org/x/crypto v0.0.0-20220411220226-7b82a4e95df4 // indirect
 	golang.org/x/net v0.0.0-20220708220712-1185a9018129 // indirect
 	google.golang.org/genproto v0.0.0-20220715211116-798f69b842b9 // indirect
-	google.golang.org/grpc v1.48.0 // indirect
-	google.golang.org/protobuf v1.28.0 // indirect
 )
 
 require (

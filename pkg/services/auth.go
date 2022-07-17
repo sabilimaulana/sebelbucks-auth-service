@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/google/uuid"
 	"github.com/sabilimaulana/sebelbucks-auth-service/pkg/db"
 	"github.com/sabilimaulana/sebelbucks-auth-service/pkg/models"
 	"github.com/sabilimaulana/sebelbucks-auth-service/pkg/pb"
@@ -28,6 +29,7 @@ func (s *Server) Register(ctx context.Context, req *pb.RegisterRequest) (*pb.Reg
 
 	user.Email = req.Email
 	user.Password = utils.HashPassword(req.Password)
+	user.UUID = uuid.NewString()
 
 	s.H.DB.Create(&user)
 
@@ -83,7 +85,7 @@ func (s *Server) Validate(ctx context.Context, req *pb.ValidateRequest) (*pb.Val
 	}
 
 	return &pb.ValidateResponse{
-		Status: http.StatusOK,
-		UserId: user.Id,
+		Status:   http.StatusOK,
+		UserUuid: user.UUID,
 	}, nil
 }
