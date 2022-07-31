@@ -24,6 +24,8 @@ const _ = grpc.SupportPackageIsVersion7
 type AuthServiceClient interface {
 	Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterResponse, error)
 	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
+	RegisterAdmin(ctx context.Context, in *RegisterAdminRequest, opts ...grpc.CallOption) (*RegisterAdminResponse, error)
+	LoginAdmin(ctx context.Context, in *LoginAdminRequest, opts ...grpc.CallOption) (*LoginAdminResponse, error)
 	Validate(ctx context.Context, in *ValidateRequest, opts ...grpc.CallOption) (*ValidateResponse, error)
 }
 
@@ -53,6 +55,24 @@ func (c *authServiceClient) Login(ctx context.Context, in *LoginRequest, opts ..
 	return out, nil
 }
 
+func (c *authServiceClient) RegisterAdmin(ctx context.Context, in *RegisterAdminRequest, opts ...grpc.CallOption) (*RegisterAdminResponse, error) {
+	out := new(RegisterAdminResponse)
+	err := c.cc.Invoke(ctx, "/auth.AuthService/RegisterAdmin", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authServiceClient) LoginAdmin(ctx context.Context, in *LoginAdminRequest, opts ...grpc.CallOption) (*LoginAdminResponse, error) {
+	out := new(LoginAdminResponse)
+	err := c.cc.Invoke(ctx, "/auth.AuthService/LoginAdmin", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *authServiceClient) Validate(ctx context.Context, in *ValidateRequest, opts ...grpc.CallOption) (*ValidateResponse, error) {
 	out := new(ValidateResponse)
 	err := c.cc.Invoke(ctx, "/auth.AuthService/Validate", in, out, opts...)
@@ -68,6 +88,8 @@ func (c *authServiceClient) Validate(ctx context.Context, in *ValidateRequest, o
 type AuthServiceServer interface {
 	Register(context.Context, *RegisterRequest) (*RegisterResponse, error)
 	Login(context.Context, *LoginRequest) (*LoginResponse, error)
+	RegisterAdmin(context.Context, *RegisterAdminRequest) (*RegisterAdminResponse, error)
+	LoginAdmin(context.Context, *LoginAdminRequest) (*LoginAdminResponse, error)
 	Validate(context.Context, *ValidateRequest) (*ValidateResponse, error)
 	mustEmbedUnimplementedAuthServiceServer()
 }
@@ -81,6 +103,12 @@ func (UnimplementedAuthServiceServer) Register(context.Context, *RegisterRequest
 }
 func (UnimplementedAuthServiceServer) Login(context.Context, *LoginRequest) (*LoginResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
+}
+func (UnimplementedAuthServiceServer) RegisterAdmin(context.Context, *RegisterAdminRequest) (*RegisterAdminResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RegisterAdmin not implemented")
+}
+func (UnimplementedAuthServiceServer) LoginAdmin(context.Context, *LoginAdminRequest) (*LoginAdminResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method LoginAdmin not implemented")
 }
 func (UnimplementedAuthServiceServer) Validate(context.Context, *ValidateRequest) (*ValidateResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Validate not implemented")
@@ -134,6 +162,42 @@ func _AuthService_Login_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AuthService_RegisterAdmin_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RegisterAdminRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServiceServer).RegisterAdmin(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/auth.AuthService/RegisterAdmin",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).RegisterAdmin(ctx, req.(*RegisterAdminRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AuthService_LoginAdmin_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LoginAdminRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServiceServer).LoginAdmin(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/auth.AuthService/LoginAdmin",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).LoginAdmin(ctx, req.(*LoginAdminRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _AuthService_Validate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ValidateRequest)
 	if err := dec(in); err != nil {
@@ -166,6 +230,14 @@ var AuthService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Login",
 			Handler:    _AuthService_Login_Handler,
+		},
+		{
+			MethodName: "RegisterAdmin",
+			Handler:    _AuthService_RegisterAdmin_Handler,
+		},
+		{
+			MethodName: "LoginAdmin",
+			Handler:    _AuthService_LoginAdmin_Handler,
 		},
 		{
 			MethodName: "Validate",

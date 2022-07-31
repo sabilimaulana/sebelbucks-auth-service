@@ -65,6 +65,67 @@ func (s *Server) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginResp
 	}, nil
 }
 
+func (s *Server) RegisterAdmin(ctx context.Context, req *pb.RegisterAdminRequest) (*pb.RegisterAdminResponse, error) {
+	var user models.User
+	var admin models.Admin
+
+	if result := s.H.DB.Where(&models.User{Email: req.Email}).First(&user); result.Error == nil {
+		return &pb.RegisterAdminResponse{
+			Status: http.StatusConflict,
+			Error:  "E-Mail already exists",
+		}, nil
+	}
+
+	user.Email = req.Email
+	user.Password = utils.HashPassword(req.Password)
+	user.UUID = uuid.NewString()
+
+	admin.UserUUID = user.UUID
+
+	s.H.DB.Create(&user)
+	s.H.DB.Create(&admin)
+
+	return &pb.RegisterAdminResponse{
+		Status: http.StatusCreated,
+	}, nil
+}
+
+func (s *Server) LoginAdmin(ctx context.Context, req *pb.LoginAdminRequest) (*pb.LoginAdminResponse, error) {
+	var user models.User
+	var admin models.Admin
+
+	if result := s.H.DB.Where(&models.User{Email: req.Email}).First(&user); result.Error != nil {
+		return &pb.LoginAdminResponse{
+			Status: http.StatusNotFound,
+			Error:  "User not found",
+		}, nil
+	}
+
+	match := utils.CheckPasswordHash(req.Password, user.Password)
+
+	if !match {
+		return &pb.LoginAdminResponse{
+			Status: http.StatusNotFound,
+			Error:  "User not found",
+		}, nil
+	}
+
+	// Check is the user admin
+	if result := s.H.DB.Where(&models.Admin{UserUUID: user.UUID}).First(&admin); result.Error != nil {
+		return &pb.LoginAdminResponse{
+			Status: http.StatusNotFound,
+			Error:  "User not found",
+		}, nil
+	}
+
+	token, _ := s.Jwt.GenerateToken(user)
+
+	return &pb.LoginAdminResponse{
+		Status: http.StatusOK,
+		Token:  token,
+	}, nil
+}
+
 func (s *Server) Validate(ctx context.Context, req *pb.ValidateRequest) (*pb.ValidateResponse, error) {
 	claims, err := s.Jwt.ValidateToken(req.Token)
 
@@ -76,6 +137,8 @@ func (s *Server) Validate(ctx context.Context, req *pb.ValidateRequest) (*pb.Val
 	}
 
 	var user models.User
+	var admin models.Admin
+	isAdmin := true
 
 	if result := s.H.DB.Where(&models.User{Email: claims.Email}).First(&user); result.Error != nil {
 		return &pb.ValidateResponse{
@@ -84,8 +147,13 @@ func (s *Server) Validate(ctx context.Context, req *pb.ValidateRequest) (*pb.Val
 		}, nil
 	}
 
+	if result := s.H.DB.Where(&models.Admin{UserUUID: user.UUID}).First(&admin); result.Error != nil {
+		isAdmin = false
+	}
+
 	return &pb.ValidateResponse{
 		Status:   http.StatusOK,
 		UserUuid: user.UUID,
+		IsAdmin:  isAdmin,
 	}, nil
 }
